@@ -1,6 +1,26 @@
 {
   "lockfile_version": "1",
   "packages": {
+    "delve@latest": {
+      "last_modified": "2023-11-19T17:46:56Z",
+      "resolved": "github:NixOS/nixpkgs/0bf3f5cf6a98b5d077cdcdb00a6d4b3d92bc78b5#delve",
+      "source": "devbox-search",
+      "version": "1.21.0",
+      "systems": {
+        "aarch64-darwin": {
+          "store_path": "/nix/store/75g28ybnwkbzxfdvihhsf5nws6mvvjh4-delve-1.21.0"
+        },
+        "aarch64-linux": {
+          "store_path": "/nix/store/hh23vi2ip96bna9jgqkxb2wc5lpi8gsi-delve-1.21.0"
+        },
+        "x86_64-darwin": {
+          "store_path": "/nix/store/kjdqgxbri3f8r9g5k3pmbwq8zrf38ljc-delve-1.21.0"
+        },
+        "x86_64-linux": {
+          "store_path": "/nix/store/40id5zcwis5wcykdxbc0jdip4gj82cpp-delve-1.21.0"
+        }
+      }
+    },
     "gcc@latest": {
       "last_modified": "2023-11-19T17:46:56Z",
       "resolved": "github:NixOS/nixpkgs/0bf3f5cf6a98b5d077cdcdb00a6d4b3d92bc78b5#gcc13",
@@ -21,6 +41,26 @@
         }
       }
     },
+    "go-tools@latest": {
+      "last_modified": "2023-11-19T17:46:56Z",
+      "resolved": "github:NixOS/nixpkgs/0bf3f5cf6a98b5d077cdcdb00a6d4b3d92bc78b5#go-tools",
+      "source": "devbox-search",
+      "version": "2023.1.6",
+      "systems": {
+        "aarch64-darwin": {
+          "store_path": "/nix/store/67v3lld30gj08yy61fahjr0icgcbkg3w-go-tools-2023.1.6"
+        },
+        "aarch64-linux": {
+          "store_path": "/nix/store/gvb24kgi8lid3yaygbkv72kp7ffypgqf-go-tools-2023.1.6"
+        },
+        "x86_64-darwin": {
+          "store_path": "/nix/store/40f3wjywba6yg48msmp1r830hfn3gzz8-go-tools-2023.1.6"
+        },
+        "x86_64-linux": {
+          "store_path": "/nix/store/7qvn50bh0allirbd4g5h7sw2g6aik6gs-go-tools-2023.1.6"
+        }
+      }
+    },
     "go@latest": {
       "last_modified": "2023-11-19T17:46:56Z",
       "resolved": "github:NixOS/nixpkgs/0bf3f5cf6a98b5d077cdcdb00a6d4b3d92bc78b5#go",
@@ -38,6 +78,26 @@
         },
         "x86_64-linux": {
           "store_path": "/nix/store/y7abhs9glxfcg7lgcdc8i4ml5wg5ly92-go-1.21.4"
+        }
+      }
+    },
+    "gofumpt@latest": {
+      "last_modified": "2023-11-19T17:46:56Z",
+      "resolved": "github:NixOS/nixpkgs/0bf3f5cf6a98b5d077cdcdb00a6d4b3d92bc78b5#gofumpt",
+      "source": "devbox-search",
+      "version": "0.3.1",
+      "systems": {
+        "aarch64-darwin": {
+          "store_path": "/nix/store/901kj3p2xs0dy8n5rwpazrg7b23jpm1f-gofumpt-0.3.1"
+        },
+        "aarch64-linux": {
+          "store_path": "/nix/store/ng9d5sv5y2i8in8r9n355inml4dwq3f0-gofumpt-0.3.1"
+        },
+        "x86_64-darwin": {
+          "store_path": "/nix/store/00w68ga3zgxsvi15hbqmxkyzv3sy2lqr-gofumpt-0.3.1"
+        },
+        "x86_64-linux": {
+          "store_path": "/nix/store/2slx1q9lywmab0ifnrafnapdag684rqi-gofumpt-0.3.1"
         }
       }
     },

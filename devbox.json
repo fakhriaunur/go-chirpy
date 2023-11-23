@@ -6,7 +6,10 @@
     "goimports@latest",
     "golint@latest",
     "gcc@latest",
-    "libcap@latest"
+    "libcap@latest",
+    "delve@latest",
+    "go-tools@latest",
+    "gofumpt@latest"
   ],
   "shell": {
     "init_hook": [
