@@ -158,6 +158,26 @@
         }
       }
     },
+    "gotests@latest": {
+      "last_modified": "2023-11-19T17:46:56Z",
+      "resolved": "github:NixOS/nixpkgs/0bf3f5cf6a98b5d077cdcdb00a6d4b3d92bc78b5#gotests",
+      "source": "devbox-search",
+      "version": "1.6.0",
+      "systems": {
+        "aarch64-darwin": {
+          "store_path": "/nix/store/vbv5gqp9qq3iz6j3c9319df3rjj7pfbm-gotests-1.6.0"
+        },
+        "aarch64-linux": {
+          "store_path": "/nix/store/5l2dgwz2pxain4i8hwfvv0r11xwjxfl7-gotests-1.6.0"
+        },
+        "x86_64-darwin": {
+          "store_path": "/nix/store/m62qlzj2yxk818xz7rp7xycnrivr030z-gotests-1.6.0"
+        },
+        "x86_64-linux": {
+          "store_path": "/nix/store/46d30v698x6safmn4lqavyvk3ix6parq-gotests-1.6.0"
+        }
+      }
+    },
     "gotools@latest": {
       "last_modified": "2023-11-19T17:46:56Z",
       "resolved": "github:NixOS/nixpkgs/0bf3f5cf6a98b5d077cdcdb00a6d4b3d92bc78b5#gotools",

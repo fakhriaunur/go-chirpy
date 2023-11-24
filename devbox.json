@@ -9,7 +9,8 @@
     "libcap@latest",
     "delve@latest",
     "go-tools@latest",
-    "gofumpt@latest"
+    "gofumpt@latest",
+    "gotests@latest"
   ],
   "shell": {
     "init_hook": [
