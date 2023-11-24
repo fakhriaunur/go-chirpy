@@ -3,16 +3,28 @@ package main
 import (
 	"log"
 	"net/http"
+	"strconv"
 )
+
+type apiConfig struct {
+	fileserverHits int
+}
 
 func main() {
 	const port = "8080"
 	const filepathRoot = "."
 
+	apiCfg := &apiConfig{
+		fileserverHits: 0,
+	}
+
 	mux := http.NewServeMux()
-	mux.Handle("/app/", http.StripPrefix("/app", http.FileServer(http.Dir(filepathRoot))))
-	readinessHandler := handleReadiness()
-	mux.HandleFunc("/healthz", readinessHandler)
+	appHandler := http.StripPrefix("/app", http.FileServer(http.Dir(filepathRoot)))
+	mux.Handle("/app/", apiCfg.middlewareMetricsInc(appHandler))
+	mux.HandleFunc("/metrics", apiCfg.handlerMetrics)
+	mux.HandleFunc("/reset", apiCfg.handlerReset)
+	mux.HandleFunc("/healthz", handlerReadiness)
+
 	corsMux := middlewareCors(mux)
 
 	server := &http.Server{
@@ -24,24 +36,17 @@ func main() {
 	log.Fatal(server.ListenAndServe())
 }
 
-func handleReadiness() http.HandlerFunc {
+func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		cfg.fileserverHits++
+		w.Header().Set("Cache-Control", "no-cache")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
-	})
-}
-
-func middlewareCors(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		const aca = "Access-Control-Allow"
-		w.Header().Set(aca+"-Origin", "*")
-		w.Header().Set(aca+"-Methods", "GET, POST, OPTIONS, PUT, DELETE")
-		w.Header().Set(aca+"-Headers", "*")
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
 		next.ServeHTTP(w, r)
 	})
+
+}
+
+func (cfg *apiConfig) handlerMetrics(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Hits: " + strconv.Itoa(cfg.fileserverHits)))
 }
