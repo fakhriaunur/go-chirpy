@@ -30,23 +30,31 @@ func handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profaneWords := []string{"kerfuffle", "sharbert", "fornax"}
-	bodySlice := strings.Split(params.Body, " ")
-	for i := range bodySlice {
-		for _, profaneWord := range profaneWords {
-			const wordReplacement = "****"
-			if strings.ToLower(bodySlice[i]) == profaneWord {
-				bodySlice[i] = wordReplacement
-			}
-		}
+	badWords := map[string]struct{}{
+		"kerfuffle": {},
+		"sharbert":  {},
+		"fornax":    {},
 	}
 
-	cleanedBody := strings.Join(bodySlice, " ")
+	cleanedBody := getCleanedBody(params.Body, badWords)
 
 	respondWithJSON(w, http.StatusOK, returnVals{
 		CleanedBody: cleanedBody,
 	})
 
+}
+
+func getCleanedBody(body string, badWords map[string]struct{}) string {
+	const wordReplacement = "****"
+	words := strings.Split(body, " ")
+	for i, word := range words {
+		loweredWord := strings.ToLower(word)
+		if _, ok := badWords[loweredWord]; ok {
+			words[i] = wordReplacement
+		}
+	}
+	cleanedBody := strings.Join(words, " ")
+	return cleanedBody
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
