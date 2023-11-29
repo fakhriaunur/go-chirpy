@@ -37,6 +37,7 @@ func main() {
 	apiRouter.Get("/healthz", handlerReadiness)
 	apiRouter.Get("/reset", apiCfg.handlerReset)
 	apiRouter.Get("/chirps", apiCfg.handlerChirpsGet)
+	apiRouter.Get("/chirps/{chirpID}", apiCfg.handlerChirpsIDGet)
 	apiRouter.Post("/chirps", apiCfg.handlerChirpsCreate)
 	router.Mount("/api", apiRouter)
 
