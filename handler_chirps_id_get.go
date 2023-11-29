@@ -4,33 +4,25 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/fakhriaunur/go-chirpy/internal/database"
 	"github.com/go-chi/chi/v5"
 )
 
 func (cfg *apiConfig) handlerChirpsIDGet(w http.ResponseWriter, r *http.Request) {
 	chirpID, err := strconv.Atoi(chi.URLParam(r, "chirpID"))
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "ChirpID is not interger")
+		respondWithError(w, http.StatusBadRequest, "invalid chirp ID")
 		return
 	}
 
-	dbChirps, err := cfg.DB.GetChirps()
+	dbChirp, err := cfg.DB.GetChirp(chirpID)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't retreive chirps")
+		respondWithError(w, http.StatusNotFound, "couldn't get chirp")
 		return
 	}
 
-	if chirpID <= 0 || chirpID > len(dbChirps) {
-		respondWithError(w, http.StatusNotFound, "Chirp is not found")
-		return
-	}
-
-	chirp := database.Chirp{}
-	for _, dbChirp := range dbChirps {
-		if dbChirp.ID == chirpID {
-			chirp = dbChirp
-		}
+	chirp := Chirp{
+		ID:   dbChirp.ID,
+		Body: dbChirp.Body,
 	}
 
 	respondWithJSON(w, http.StatusOK, chirp)
