@@ -2,22 +2,22 @@
   "lockfile_version": "1",
   "packages": {
     "delve@latest": {
-      "last_modified": "2023-11-19T17:46:56Z",
-      "resolved": "github:NixOS/nixpkgs/0bf3f5cf6a98b5d077cdcdb00a6d4b3d92bc78b5#delve",
+      "last_modified": "2023-11-28T03:21:20Z",
+      "resolved": "github:NixOS/nixpkgs/4469e22700c47792f93daa882786d36f9bf8bc2a#delve",
       "source": "devbox-search",
-      "version": "1.21.0",
+      "version": "1.21.2",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/75g28ybnwkbzxfdvihhsf5nws6mvvjh4-delve-1.21.0"
+          "store_path": "/nix/store/3yi0bznqrgm0ih8yc6ij8j26019jn9zl-delve-1.21.2"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/hh23vi2ip96bna9jgqkxb2wc5lpi8gsi-delve-1.21.0"
+          "store_path": "/nix/store/dcsji9v3csxni9gpj4army6wdg151760-delve-1.21.2"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/kjdqgxbri3f8r9g5k3pmbwq8zrf38ljc-delve-1.21.0"
+          "store_path": "/nix/store/n1wc2md90nnrqvjgn5m3w1nmrqr12qwm-delve-1.21.2"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/40id5zcwis5wcykdxbc0jdip4gj82cpp-delve-1.21.0"
+          "store_path": "/nix/store/is6sximnrrl3kq43xg0nd15dnwhysxv8-delve-1.21.2"
         }
       }
     },

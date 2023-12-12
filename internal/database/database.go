@@ -7,7 +7,10 @@ import (
 	"sync"
 )
 
-var ErrNotExist = errors.New("resource not found")
+var (
+	ErrNotExist     = errors.New("resource not found")
+	ErrAlreadyExist = errors.New("resource already exist")
+)
 
 type DB struct {
 	path string
@@ -75,4 +78,12 @@ func (db *DB) writeDB(dbStructure DBStructure) error {
 	}
 	return nil
 
+}
+
+func (db *DB) ResetDB() error {
+	err := os.Remove(db.path)
+	if errors.Is(err, ErrNotExist) {
+		return nil
+	}
+	return db.ensureDB()
 }
