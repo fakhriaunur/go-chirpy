@@ -11,11 +11,13 @@ func (c *apiConfig) handlerLoginCreate(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
+		Expiry   *int   `json:"expires_in_seconds"`
 	}
 
 	type returnVals struct {
 		Email string `json:"email"`
 		ID    int    `json:"id"`
+		Token string `json:"token"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -36,9 +38,16 @@ func (c *apiConfig) handlerLoginCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	token, err := auth.GenerateToken(c.Secret, dbUser.ID, params.Expiry)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "couldn't generate token")
+		return
+	}
+
 	respondWithJSON(w, http.StatusOK, returnVals{
 		Email: dbUser.Email,
 		ID:    dbUser.ID,
+		Token: token,
 	})
 
 }

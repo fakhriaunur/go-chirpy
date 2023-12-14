@@ -30,3 +30,4 @@ out
 database.json
 
 *.bak
+.env

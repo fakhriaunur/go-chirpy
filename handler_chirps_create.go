@@ -17,6 +17,10 @@ func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request
 		Body string `json:"body"`
 	}
 
+	type returnVals struct {
+		Chirp
+	}
+
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
 	err := decoder.Decode(&params)
@@ -35,10 +39,18 @@ func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't create chirp")
 	}
-	respondWithJSON(w, http.StatusCreated, Chirp{
-		ID:   chirp.ID,
-		Body: chirp.Body,
+
+	respondWithJSON(w, http.StatusCreated, returnVals{
+		Chirp: Chirp{
+			ID:   chirp.ID,
+			Body: chirp.Body,
+		},
 	})
+
+	// respondWithJSON(w, http.StatusCreated, Chirp{
+	// 	ID:   chirp.ID,
+	// 	Body: chirp.Body,
+	// })
 }
 
 func validateChirp(body string) (string, error) {
