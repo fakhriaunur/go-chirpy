@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strings"
 
@@ -24,10 +23,15 @@ func (c *apiConfig) handlerUserUpdate(w http.ResponseWriter, r *http.Request) {
 	token = strings.TrimPrefix(token, "Bearer ")
 	// log.Println(token)
 
-	userID, err := auth.ValidateToken(token, c.Secret)
+	issuer, userID, err := auth.ValidateToken(token, c.Secret)
 	if err != nil {
-		log.Println(err)
+		// log.Println(err)
 		respondWithError(w, http.StatusUnauthorized, "couldn't validate token")
+		return
+	}
+
+	if issuer != "chirpy-access" {
+		respondWithError(w, http.StatusUnauthorized, "couldn't validate issuer")
 		return
 	}
 	// log.Println(userID)

@@ -9,25 +9,28 @@ import (
 )
 
 // func GenerateToken(secret string, id int, expTimeInSeconds *int) (*jwt.Token, error) {
-func GenerateToken(secret string, id int, expTimeInSeconds *int) (string, error) {
-	expTimeVal := 0
-	switch expTimeInSeconds {
-	case nil:
-		expTimeVal = 24 * 3600
-	default:
-		if expTimeVal > 24*3600 {
-			expTimeVal = 24 * 3600
-		} else {
-			expTimeVal = *expTimeInSeconds
-		}
-	}
+// func GenerateToken(secret string, id int, expTimeInSeconds *int) (string, error) {
+func GenerateToken(secret string, id int) (string, error) {
+	// expTimeVal := 0
+	// switch expTimeInSeconds {
+	// case nil:
+	// 	expTimeVal = 24 * 3600
+	// default:
+	// 	if expTimeVal > 24*3600 {
+	// 		expTimeVal = 24 * 3600
+	// 	} else {
+	// 		expTimeVal = *expTimeInSeconds
+	// 	}
+	// }
 
-	claims := &jwt.RegisteredClaims{
-		Issuer:    "chirpy",
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(expTimeVal) * time.Second)),
-		Subject:   strconv.Itoa(id),
-	}
+	claims := generateRegisteredClaims("chirpy-access", 1, id)
+
+	// claims := &jwt.RegisteredClaims{
+	// 	Issuer:    "chirpy",
+	// 	IssuedAt:  jwt.NewNumericDate(time.Now()),
+	// 	ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(expTimeVal) * time.Second)),
+	// 	Subject:   strconv.Itoa(id),
+	// }
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	ss, err := token.SignedString([]byte(secret))
@@ -41,7 +44,18 @@ func GenerateToken(secret string, id int, expTimeInSeconds *int) (string, error)
 
 }
 
-func ValidateToken(tokenStr, secret string) (int, error) {
+func GenerateRefreshToken(secret string, id int) (string, error) {
+	claims := generateRegisteredClaims("chirpy-refresh", 60*24, id)
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	ss, err := token.SignedString([]byte(secret))
+	if err != nil {
+		return "", err
+	}
+	return ss, nil
+}
+
+func ValidateToken(tokenStr, secret string) (string, int, error) {
 	type RegClaimsStruct struct {
 		jwt.RegisteredClaims
 	}
@@ -50,20 +64,32 @@ func ValidateToken(tokenStr, secret string) (int, error) {
 		return []byte(secret), nil
 	})
 	if err != nil {
-		return 0, err
+		return "", 0, err
 	}
 
 	claims, ok := token.Claims.(*RegClaimsStruct)
 	if !ok {
-		return 0, errors.New("unknown claim type")
+		return "", 0, errors.New("unknown claim type")
 	}
+
+	issuer := claims.Issuer
 
 	id, err := strconv.Atoi(claims.Subject)
 	if err != nil {
-		return 0, err
+		return "", 0, err
 	}
 
-	return id, nil
+	return issuer, id, nil
 }
 
-// func generateTokenWithClaims() {}
+func generateRegisteredClaims(issuer string, duration, id int) *jwt.RegisteredClaims {
+	claims := &jwt.RegisteredClaims{
+		Issuer:   issuer,
+		IssuedAt: jwt.NewNumericDate(time.Now()),
+		// ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(duration) * time.Hour)),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(duration) * time.Minute)),
+		Subject:   strconv.Itoa(id),
+	}
+
+	return claims
+}
