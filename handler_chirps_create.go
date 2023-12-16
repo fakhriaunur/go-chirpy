@@ -5,12 +5,15 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+
+	"github.com/fakhriaunur/go-chirpy/internal/auth"
+	"github.com/fakhriaunur/go-chirpy/internal/database"
 )
 
-type Chirp struct {
-	ID   int    `json:"id"`
-	Body string `json:"body"`
-}
+// type Chirp struct {
+// 	ID   int    `json:"id"`
+// 	Body string `json:"body"`
+// }
 
 func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
@@ -18,13 +21,26 @@ func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request
 	}
 
 	type returnVals struct {
-		Chirp
+		database.Chirp
+	}
+
+	token := r.Header.Get("Authorization")
+	token = strings.TrimPrefix(token, "Bearer ")
+
+	issuer, authorID, err := auth.ValidateToken(token, cfg.Secret)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "couldn't validate token")
+		return
+	}
+
+	if issuer != "chirpy-access" {
+		respondWithError(w, http.StatusUnauthorized, "issuer is invalid")
+		return
 	}
 
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
-	err := decoder.Decode(&params)
-	if err != nil {
+	if err := decoder.Decode(&params); err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters")
 		return
 	}
@@ -35,15 +51,16 @@ func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	chirp, err := cfg.DB.CreateChirp(cleaned)
+	chirp, err := cfg.DB.CreateChirp(authorID, cleaned)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't create chirp")
 	}
 
 	respondWithJSON(w, http.StatusCreated, returnVals{
-		Chirp: Chirp{
-			ID:   chirp.ID,
-			Body: chirp.Body,
+		Chirp: database.Chirp{
+			AuthorID: chirp.AuthorID,
+			Body:     chirp.Body,
+			ID:       chirp.ID,
 		},
 	})
 
