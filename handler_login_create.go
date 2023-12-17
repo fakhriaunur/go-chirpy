@@ -14,10 +14,11 @@ func (c *apiConfig) handlerLoginCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type returnVals struct {
-		ID           int    `json:"id"`
-		Email        string `json:"email"`
-		Token        string `json:"token"`
-		RefreshToken string `json:"refresh_token"`
+		ID          int    `json:"id"`
+		Email       string `json:"email"`
+		IsChirpyRed bool   `json:"is_chirpy_red"`
+		// Token        string `json:"token"`
+		// RefreshToken string `json:"refresh_token"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -40,8 +41,7 @@ func (c *apiConfig) handlerLoginCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := auth.GenerateToken(c.Secret, dbUser.ID)
-	if err != nil {
+	if _, err := auth.GenerateToken(c.Secret, dbUser.ID); err != nil {
 		// log.Println(err)
 		respondWithError(w, http.StatusInternalServerError, "couldn't generate token")
 		return
@@ -62,9 +62,8 @@ func (c *apiConfig) handlerLoginCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusOK, returnVals{
-		ID:           dbUser.ID,
-		Email:        dbUser.Email,
-		Token:        token,
-		RefreshToken: refreshToken,
+		ID:          dbUser.ID,
+		Email:       dbUser.Email,
+		IsChirpyRed: dbUser.IsChirpyRed,
 	})
 }

@@ -1,9 +1,10 @@
 package database
 
 type User struct {
-	ID       int    `json:"id"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	ID          int    `json:"id"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	IsChirpyRed bool   `json:"is_chirpy_red"`
 }
 
 func (db *DB) CreateUser(email string, password string) (User, error) {
@@ -20,9 +21,10 @@ func (db *DB) CreateUser(email string, password string) (User, error) {
 
 	id := len(dbStructure.Users) + 1
 	user := User{
-		ID:       id,
-		Email:    email,
-		Password: password,
+		ID:          id,
+		Email:       email,
+		Password:    password,
+		IsChirpyRed: false,
 	}
 	dbStructure.Users[id] = user
 
@@ -86,6 +88,27 @@ func (db *DB) UpdateUser(id int, newEmail, newPassword string) (User, error) {
 	}
 	user.Email = newEmail
 	user.Password = newPassword
+	dbStructure.Users[id] = user
+
+	if err := db.writeDB(dbStructure); err != nil {
+		return User{}, err
+	}
+
+	return user, nil
+}
+
+func (db *DB) UpgradeUser(id int) (User, error) {
+	dbStructure, err := db.loadDB()
+	if err != nil {
+		return User{}, err
+	}
+
+	user, ok := dbStructure.Users[id]
+	if !ok {
+		return User{}, err
+	}
+
+	user.IsChirpyRed = true
 	dbStructure.Users[id] = user
 
 	if err := db.writeDB(dbStructure); err != nil {

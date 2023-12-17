@@ -9,12 +9,6 @@ import (
 	"github.com/fakhriaunur/go-chirpy/internal/database"
 )
 
-type User struct {
-	ID       int    `json:"id"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 func (cfg *apiConfig) handlerUsersCreate(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Email    string `json:"email"`
@@ -22,8 +16,9 @@ func (cfg *apiConfig) handlerUsersCreate(w http.ResponseWriter, r *http.Request)
 	}
 
 	type returnVals struct {
-		Email string `json:"email"`
-		ID    int    `json:"id"`
+		Email       string `json:"email"`
+		ID          int    `json:"id"`
+		IsChirpyRed bool   `json:"is_chirpy_red"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -51,8 +46,9 @@ func (cfg *apiConfig) handlerUsersCreate(w http.ResponseWriter, r *http.Request)
 	}
 
 	respondWithJSON(w, http.StatusCreated, returnVals{
-		Email: user.Email,
-		ID:    user.ID,
+		Email:       user.Email,
+		ID:          user.ID,
+		IsChirpyRed: user.IsChirpyRed,
 	})
 
 }

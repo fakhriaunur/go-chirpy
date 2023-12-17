@@ -15,8 +15,9 @@ func (c *apiConfig) handlerUserUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type returnVals struct {
-		Email string `json:"email"`
-		ID    int    `json:"id"`
+		Email       string `json:"email"`
+		ID          int    `json:"id"`
+		IsChirpyRed bool   `json:"is_chiry_red"`
 	}
 
 	token := r.Header.Get("Authorization")
@@ -60,7 +61,8 @@ func (c *apiConfig) handlerUserUpdate(w http.ResponseWriter, r *http.Request) {
 	// log.Println(dbUser)
 
 	respondWithJSON(w, http.StatusOK, returnVals{
-		Email: dbUser.Email,
-		ID:    dbUser.ID,
+		Email:       dbUser.Email,
+		ID:          dbUser.ID,
+		IsChirpyRed: dbUser.IsChirpyRed,
 	})
 }
