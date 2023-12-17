@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 func (cfg *apiConfig) handlerPolkaWebhooksCreate(w http.ResponseWriter, r *http.Request) {
@@ -13,6 +14,14 @@ func (cfg *apiConfig) handlerPolkaWebhooksCreate(w http.ResponseWriter, r *http.
 	type parameters struct {
 		Event string `json:"event"`
 		Data  `json:"data"`
+	}
+
+	polkaKey := r.Header.Get("Authorization")
+	polkaKey = strings.TrimPrefix(polkaKey, "ApiKey ")
+
+	if polkaKey != cfg.PolkaKey {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 
 	decoder := json.NewDecoder(r.Body)
