@@ -1,0 +1,18 @@
+GET http://localhost:8080/app
+
+###
+
+POST http://localhost:8080/api/validate_chirp
+Content-Type: application/json
+
+# {
+#     "body": "I had something interesting for breakfast"
+# }
+
+{
+  "body": "I hear Mastodon is better than Chirpy. sharbert I need to migrate",
+  "extra": "this should be ignored"
+}
+
+###
+

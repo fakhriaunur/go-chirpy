@@ -32,12 +32,4 @@ func (cfg *apiConfig) handlerChirpsIDGet(w http.ResponseWriter, r *http.Request)
 			AuthorID: dbChirp.AuthorID,
 		},
 	})
-
-	// chirp := database.Chirp{
-	// 	ID:       dbChirp.ID,
-	// 	Body:     dbChirp.Body,
-	// 	AuthorID: dbChirp.AuthorID,
-	// }
-
-	// respondWithJSON(w, http.StatusOK, chirp)
 }

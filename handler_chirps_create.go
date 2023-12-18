@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/fakhriaunur/go-chirpy/internal/auth"
@@ -24,17 +25,16 @@ func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request
 		database.Chirp
 	}
 
-	token := r.Header.Get("Authorization")
-	token = strings.TrimPrefix(token, "Bearer ")
-
-	issuer, authorID, err := auth.ValidateToken(token, cfg.Secret)
+	token, err := auth.GetBearerToken(r.Header)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "couldn't validate token")
+		respondWithError(w, http.StatusUnauthorized, "couldn't get jwt")
 		return
 	}
 
-	if issuer != "chirpy-access" {
-		respondWithError(w, http.StatusUnauthorized, "issuer is invalid")
+	subject, err := auth.ValidateJWT(token, cfg.Secret)
+	if err != nil {
+		// log.Println(err)
+		respondWithError(w, http.StatusInternalServerError, "couldn't validate token")
 		return
 	}
 
@@ -51,6 +51,12 @@ func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	authorID, err := strconv.Atoi(subject)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "couldn't parse authorID")
+		return
+	}
+
 	chirp, err := cfg.DB.CreateChirp(authorID, cleaned)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't create chirp")
@@ -63,11 +69,6 @@ func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request
 			ID:       chirp.ID,
 		},
 	})
-
-	// respondWithJSON(w, http.StatusCreated, Chirp{
-	// 	ID:   chirp.ID,
-	// 	Body: chirp.Body,
-	// })
 }
 
 func validateChirp(body string) (string, error) {

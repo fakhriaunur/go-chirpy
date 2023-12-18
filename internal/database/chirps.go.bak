@@ -1,0 +1,39 @@
+package database
+
+type Chirp struct {
+	ID   int    `json:"id"`
+	Body string `json:"body"`
+}
+
+func (db *DB[Chirp]) CreateChirp(body string) (Chirp, error) {
+	dbStructure, err := db.loadDB()
+	if err != nil {
+		return Chirp{}, err
+	}
+
+	id := len(dbStructure.Data) + 1
+	chirp := Chirp{
+		ID:   id,
+		Body: body,
+	}
+	dbStructure.Data[id] = chirp
+
+	if err := db.writeDB(dbStructure); err != nil {
+		return Chirp{}, err
+	}
+
+	return chirp, nil
+}
+
+func (db *DB[Chirp]) GetChirps() ([]Chirp, error) {
+	dbStructure, err := db.loadDB()
+	if err != nil {
+		return nil, err
+	}
+
+	chirps := make([]Chirp, 0, len(dbStructure.Data))
+	for _, chirp := range dbStructure.Data {
+		chirps = append(chirps, chirp)
+	}
+	return chirps, nil
+}

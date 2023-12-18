@@ -3,36 +3,33 @@ package main
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
+	"strconv"
 
 	"github.com/fakhriaunur/go-chirpy/internal/auth"
+	"github.com/fakhriaunur/go-chirpy/internal/database"
 )
 
-func (c *apiConfig) handlerUserUpdate(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) handlerUserUpdate(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
 	type returnVals struct {
-		Email       string `json:"email"`
-		ID          int    `json:"id"`
-		IsChirpyRed bool   `json:"is_chiry_red"`
+		database.User
 	}
 
-	token := r.Header.Get("Authorization")
-	token = strings.TrimPrefix(token, "Bearer ")
+	token, err := auth.GetBearerToken(r.Header)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "couldn't get jwt")
+		return
+	}
 	// log.Println(token)
 
-	issuer, userID, err := auth.ValidateToken(token, c.Secret)
+	subject, err := auth.ValidateJWT(token, cfg.Secret)
 	if err != nil {
 		// log.Println(err)
 		respondWithError(w, http.StatusUnauthorized, "couldn't validate token")
-		return
-	}
-
-	if issuer != "chirpy-access" {
-		respondWithError(w, http.StatusUnauthorized, "couldn't validate issuer")
 		return
 	}
 	// log.Println(userID)
@@ -51,8 +48,13 @@ func (c *apiConfig) handlerUserUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// log.Println(newPassword)
+	userID, err := strconv.Atoi(subject)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "couldn't parse userID")
+		return
+	}
 
-	dbUser, err := c.DB.UpdateUser(userID, params.Email, newPassword)
+	dbUser, err := cfg.DB.UpdateUser(userID, params.Email, newPassword)
 	if err != nil {
 		respondWithError(w, http.StatusConflict, "couldnt update user")
 		return
@@ -61,8 +63,10 @@ func (c *apiConfig) handlerUserUpdate(w http.ResponseWriter, r *http.Request) {
 	// log.Println(dbUser)
 
 	respondWithJSON(w, http.StatusOK, returnVals{
-		Email:       dbUser.Email,
-		ID:          dbUser.ID,
-		IsChirpyRed: dbUser.IsChirpyRed,
+		User: database.User{
+			Email:       dbUser.Email,
+			ID:          dbUser.ID,
+			IsChirpyRed: dbUser.IsChirpyRed,
+		},
 	})
 }

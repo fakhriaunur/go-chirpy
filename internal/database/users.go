@@ -1,5 +1,7 @@
 package database
 
+import "errors"
+
 type User struct {
 	ID          int    `json:"id"`
 	Email       string `json:"email"`
@@ -8,15 +10,13 @@ type User struct {
 }
 
 func (db *DB) CreateUser(email string, password string) (User, error) {
+	if _, err := db.GetUserByEmail(email); !errors.Is(err, ErrNotExist) {
+		return User{}, ErrAlreadyExist
+	}
+
 	dbStructure, err := db.loadDB()
 	if err != nil {
 		return User{}, err
-	}
-
-	for _, user := range dbStructure.Users {
-		if user.Email == email {
-			return User{}, ErrAlreadyExist
-		}
 	}
 
 	id := len(dbStructure.Users) + 1

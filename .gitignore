@@ -23,11 +23,11 @@ go.work
 # executable
 out
 
-# REST Client files
-*.http
-
 ## mock database
 database.json
 
-*.bak
+# REST Client files
+# *.http
+
+# *.bak
 .env

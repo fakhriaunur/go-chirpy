@@ -3,24 +3,21 @@ package main
 import (
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/fakhriaunur/go-chirpy/internal/auth"
 	"github.com/go-chi/chi/v5"
 )
 
 func (cfg *apiConfig) handlerChirpsIDDelete(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get("Authorization")
-	token = strings.TrimPrefix(token, "Bearer ")
-
-	issuer, authorID, err := auth.ValidateToken(token, cfg.Secret)
+	token, err := auth.GetBearerToken(r.Header)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "couldn't validate token")
+		respondWithError(w, http.StatusUnauthorized, "couldn't get jwt")
 		return
 	}
 
-	if issuer != "chirpy-access" {
-		respondWithError(w, http.StatusBadRequest, "invalid issuer type")
+	subject, err := auth.ValidateJWT(token, cfg.Secret)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "couldn't validate token")
 		return
 	}
 
@@ -33,6 +30,12 @@ func (cfg *apiConfig) handlerChirpsIDDelete(w http.ResponseWriter, r *http.Reque
 	dbChirp, err := cfg.DB.GetChirp(chirpID)
 	if err != nil {
 		respondWithError(w, http.StatusNotFound, "couldn't get chirp")
+	}
+
+	authorID, err := strconv.Atoi(subject)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "couldn't parse authorID")
+		return
 	}
 
 	if dbChirp.AuthorID != authorID {

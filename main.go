@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 	"os"
@@ -23,7 +24,13 @@ func main() {
 	}
 
 	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET environment variable is not set")
+	}
 	polkaKey := os.Getenv("POLKA_KEY")
+	if polkaKey == "" {
+		log.Fatal("POLKA_KEY environment variable is not set")
+	}
 
 	const port = "8080"
 	const filepathRoot = "."
@@ -31,6 +38,14 @@ func main() {
 	db, err := database.NewDB("database.json")
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	dbg := flag.Bool("debug", false, "Enable debug mode")
+	flag.Parse()
+	if dbg != nil && *dbg {
+		if err := db.ResetDB(); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	apiCfg := &apiConfig{
@@ -49,17 +64,22 @@ func main() {
 	apiRouter := chi.NewRouter()
 	apiRouter.Get("/healthz", handlerReadiness)
 	apiRouter.Get("/reset", apiCfg.handlerReset)
+
 	apiRouter.Get("/chirps", apiCfg.handlerChirpsGet)
 	apiRouter.Get("/chirps/{chirpID}", apiCfg.handlerChirpsIDGet)
 	apiRouter.Post("/chirps", apiCfg.handlerChirpsCreate)
 	apiRouter.Delete("/chirps/{chirpID}", apiCfg.handlerChirpsIDDelete)
+
 	apiRouter.Get("/users", apiCfg.handlerUsersGet)
 	apiRouter.Post("/users", apiCfg.handlerUsersCreate)
+
 	apiRouter.Put("/users", apiCfg.handlerUserUpdate)
-	apiRouter.Post("/login", apiCfg.handlerLoginCreate)
+	apiRouter.Post("/login", apiCfg.handlerLogin)
 	apiRouter.Post("/refresh", apiCfg.handlerRefresh)
 	apiRouter.Post("/revoke", apiCfg.handlerRevoke)
-	apiRouter.Post("/polka/webhooks", apiCfg.handlerPolkaWebhooksCreate)
+
+	apiRouter.Post("/polka/webhooks", apiCfg.handlerPolkaWebhooks)
+
 	router.Mount("/api", apiRouter)
 
 	adminRouter := chi.NewRouter()

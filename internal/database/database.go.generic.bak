@@ -1,0 +1,78 @@
+package database
+
+import (
+	"encoding/json"
+	"errors"
+	"os"
+	"sync"
+)
+
+type dbImplementer interface {
+	Chirp | User
+}
+
+type DB[T dbImplementer] struct {
+	path string
+	mu   *sync.RWMutex
+}
+
+type DBStructure[T dbImplementer] struct {
+	Data map[int]T `json:"data"`
+}
+
+func NewDB[T dbImplementer](path string) (*DB[T], error) {
+	db := &DB[T]{
+		path: path,
+		mu:   &sync.RWMutex{},
+	}
+	err := db.ensureDB()
+	return db, err
+}
+
+func (db *DB[T]) createDB() error {
+	dbStructure := DBStructure[T]{
+		Data: map[int]T{},
+	}
+	return db.writeDB(dbStructure)
+
+}
+
+func (db *DB[T]) ensureDB() error {
+	_, err := os.ReadFile(db.path)
+	if errors.Is(err, os.ErrNotExist) {
+		return db.createDB()
+	}
+	return err
+}
+
+func (db *DB[T]) loadDB() (DBStructure[T], error) {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
+	dbStructure := DBStructure[T]{}
+	dat, err := os.ReadFile(db.path)
+	if errors.Is(err, os.ErrNotExist) {
+		return dbStructure, err
+	}
+
+	if err = json.Unmarshal(dat, &dbStructure); err != nil {
+		return dbStructure, err
+	}
+	return dbStructure, nil
+}
+
+func (db *DB[T]) writeDB(dbStructure DBStructure[T]) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	dat, err := json.Marshal(dbStructure)
+	if err != nil {
+		return err
+	}
+
+	if err = os.WriteFile(db.path, dat, 0600); err != nil {
+		return err
+	}
+	return nil
+
+}

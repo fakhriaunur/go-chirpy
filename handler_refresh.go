@@ -1,51 +1,41 @@
 package main
 
 import (
-	"log"
 	"net/http"
-	"strings"
 
 	"github.com/fakhriaunur/go-chirpy/internal/auth"
 )
 
-func (c *apiConfig) handlerRefresh(w http.ResponseWriter, r *http.Request) {
-	log.Println("handlerRefresh")
+func (cfg *apiConfig) handlerRefresh(w http.ResponseWriter, r *http.Request) {
+	// log.Println("handlerRefresh")
 	type returnVals struct {
 		Token string `json:"token"`
 	}
 
-	refreshToken := r.Header.Get("Authorization")
-	refreshToken = strings.TrimPrefix(refreshToken, "Bearer ")
-
-	issuer, userID, err := auth.ValidateToken(refreshToken, c.Secret)
+	refreshToken, err := auth.GetBearerToken(r.Header)
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "token is unauthorized")
+		respondWithError(w, http.StatusBadRequest, "couldn't find jwt")
 		return
 	}
 
-	if issuer != "chirpy-refresh" {
-		respondWithError(w, http.StatusUnauthorized, "issuer is unauthorized")
-		return
-	}
-
-	dbSession, err := c.DB.GetSession(refreshToken)
+	isRevoked, err := cfg.DB.IsTokenRevoked(refreshToken)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "couldn't retrieve session")
+		respondWithError(w, http.StatusInternalServerError, "couldn't check session")
 		return
 	}
 
-	if dbSession.IsRevoked {
-		respondWithError(w, http.StatusUnauthorized, "session is revoked")
+	if isRevoked {
+		respondWithError(w, http.StatusUnauthorized, "refresh token is revoked")
 		return
 	}
 
-	token, err := auth.GenerateToken(c.Secret, userID)
+	accessToken, err := auth.RefreshToken(refreshToken, cfg.Secret)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "couldn't generate token")
+		respondWithError(w, http.StatusUnauthorized, "couldn't validate jwt")
 		return
 	}
 
 	respondWithJSON(w, http.StatusOK, returnVals{
-		Token: token,
+		Token: accessToken,
 	})
 }

@@ -3,22 +3,22 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/fakhriaunur/go-chirpy/internal/auth"
+	"github.com/fakhriaunur/go-chirpy/internal/database"
 )
 
-func (c *apiConfig) handlerLoginCreate(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
 	type returnVals struct {
-		ID          int    `json:"id"`
-		Email       string `json:"email"`
-		IsChirpyRed bool   `json:"is_chirpy_red"`
-		// Token        string `json:"token"`
-		// RefreshToken string `json:"refresh_token"`
+		database.User
+		Token        string `json:"token"`
+		RefreshToken string `json:"refresh_token"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -28,42 +28,48 @@ func (c *apiConfig) handlerLoginCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbUser, err := c.DB.GetUserByEmail(params.Email)
+	dbUser, err := cfg.DB.GetUserByEmail(params.Email)
 	if err != nil {
 		respondWithError(w, http.StatusNotFound, "couldn't get user")
 		return
 	}
-
-	// dbToken, err := c. DB.
 
 	if err := auth.CheckHashPassword(dbUser.Password, params.Password); err != nil {
 		respondWithError(w, http.StatusUnauthorized, "couldn't validate password")
 		return
 	}
 
-	if _, err := auth.GenerateToken(c.Secret, dbUser.ID); err != nil {
+	token, err := auth.MakeJWT(
+		dbUser.ID,
+		cfg.Secret,
+		time.Hour,
+		auth.TokenTypeAccess,
+	)
+	if err != nil {
 		// log.Println(err)
-		respondWithError(w, http.StatusInternalServerError, "couldn't generate token")
+		respondWithError(w, http.StatusInternalServerError, "couldn't generate access token")
 		return
 	}
 
-	refreshToken, err := auth.GenerateRefreshToken(c.Secret, dbUser.ID)
+	refreshToken, err := auth.MakeJWT(
+		dbUser.ID,
+		cfg.Secret,
+		time.Hour*24*30*6,
+		auth.TokenTypeRefresh,
+	)
 	if err != nil {
 		// log.Println(err)
 		respondWithError(w, http.StatusInternalServerError, "couldn't generate refresh token")
 		return
 	}
 
-	// log.Println("create session")
-	if _, err := c.DB.CreateSession(refreshToken); err != nil {
-		// log.Println(err)
-		respondWithError(w, http.StatusInternalServerError, "couldn't create session")
-		return
-	}
-
 	respondWithJSON(w, http.StatusOK, returnVals{
-		ID:          dbUser.ID,
-		Email:       dbUser.Email,
-		IsChirpyRed: dbUser.IsChirpyRed,
+		User: database.User{
+			ID:          dbUser.ID,
+			Email:       dbUser.Email,
+			IsChirpyRed: dbUser.IsChirpyRed,
+		},
+		Token:        token,
+		RefreshToken: refreshToken,
 	})
 }

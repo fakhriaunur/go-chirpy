@@ -84,11 +84,11 @@ func ValidateToken(tokenStr, secret string) (string, int, error) {
 
 func generateRegisteredClaims(issuer string, duration, id int) *jwt.RegisteredClaims {
 	claims := &jwt.RegisteredClaims{
-		Issuer:   issuer,
-		IssuedAt: jwt.NewNumericDate(time.Now()),
-		// ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(duration) * time.Hour)),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(duration) * time.Minute)),
-		Subject:   strconv.Itoa(id),
+		Issuer:    issuer,
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(duration) * time.Hour)),
+		// ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(duration) * time.Minute)),
+		Subject: strconv.Itoa(id),
 	}
 
 	return claims
